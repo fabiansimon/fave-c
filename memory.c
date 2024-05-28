@@ -3,7 +3,7 @@
 
 void *reallocate(void *pointer, size_t oldSize, size_t newSize)
 {
-    (void)oldSize;
+    (void)oldSize; // for now ignore the oldSize = not used
     if (newSize == 0)
     {
         free(pointer);

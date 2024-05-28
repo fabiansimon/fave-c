@@ -18,7 +18,7 @@ void writeChunk(Chunk *chunk, uint8_t instruction)
         chunk->code = GROW_ARRAY(uint8_t, chunk->code, oldCapacity, chunk->capacity);
     }
 
-    chunk->code[chunk->capacity] = instruction;
+    chunk->code[chunk->count] = instruction;
     chunk->count++;
 }
 
@@ -31,6 +31,7 @@ void freeChunk(Chunk *chunk)
 
 int addConstant(Chunk *chunk, Value value)
 {
+    (void)value;
     writeValueArray(&chunk->constants, value);
     return chunk->constants.count - 1;
 }

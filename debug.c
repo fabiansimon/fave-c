@@ -24,20 +24,33 @@ static void simpleInstruction(const char *name, int *offset)
     (*offset)++;
 }
 
+static void constantInstruction(const char* name, Chunk* chunk, int *offset) 
+{
+    uint8_t constant = chunk->code[*offset + 1];
+    printf("%-16s %4d '", name, constant);
+    printValue(chunk->constants.values[constant]);
+    printf("'\n");
+    (*offset) += 2;
+}
 
 static void disassembleInstruction(Chunk *chunk, int *offset)
 {
     printf("%04d ", *offset);
 
     uint8_t instruction = chunk->code[*offset];
-    switch (instruction) {
-        case OP_RETURN:
-            simpleInstruction("OP_RETURN", offset);
-            break;
+    switch (instruction)
+    {
+    case OP_RETURN:
+        simpleInstruction("OP_RETURN", offset);
+        return;
 
-        default:
-            printf("Unknown instruction %d\n", instruction);
-            (*offset)++;
-            return;
-        }
+    case OP_CONSTANT:
+        constantInstruction("CONSTANT", chunk, offset);
+        return;
+
+    default:
+        printf("Unknown instruction %d\n", instruction);
+        (*offset)++;
+        return;
+    }
 }
