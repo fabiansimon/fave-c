@@ -1,9 +1,12 @@
 #include "common.h"
 #include "chunk.h"
 #include "debug.h"
+#include "vm.h"
 
 int main()
 {
+    initVM();
+
     Chunk chunk;
 
     initChunk(&chunk);
@@ -21,10 +24,9 @@ int main()
     writeChunk(&chunk, constant, 3);
 
     writeChunk(&chunk, OP_RETURN, 10);
-    writeChunk(&chunk, OP_RETURN, 11);
-    writeChunk(&chunk, OP_RETURN, 10);
 
     disassembleChunk(&chunk, "Test Chunk");
+    
     freeChunk(&chunk);
     return 0;
 }
