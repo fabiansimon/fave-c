@@ -4,6 +4,7 @@
     "common.h": "c",
     "stddef.h": "c",
     "chunk.h": "c",
-    "debug.h": "c"
+    "debug.h": "c",
+    "unordered_map": "c"
   }
 }
