@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "value.h"
+#include "line.h"
 
 typedef enum
 {
@@ -12,10 +13,12 @@ typedef enum
 
 typedef struct
 {
+    uint8_t *code;
     int count;
     int capacity;
-    int *lines;
-    uint8_t *code;
+
+    LineArray lines;
+
     ValueArray constants;
 } Chunk;
 
