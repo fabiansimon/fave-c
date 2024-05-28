@@ -1,14 +1,13 @@
 #include "common.h"
 #include "chunk.h"
+#include "debug.h"
 
 int main()
 {
     Chunk chunk;
     initChunk(&chunk);
-    printf("%d\n", chunk.count);
     writeChunk(&chunk, OP_RETURN);
-    printf("%d\n", chunk.count);
+    disassembleChunk(&chunk, "Test Chunk");
     freeChunk(&chunk);
-    printf("%d\n", chunk.count);
     return 0;
 }
