@@ -6,19 +6,23 @@ int main()
 {
     Chunk chunk;
 
-    printf("%d\n", OP_RETURN);
-    printf("%d\n", OP_CONSTANT);
     initChunk(&chunk);
-    
-    writeChunk(&chunk, OP_RETURN, 1);
 
-    int constant =  addConstant(&chunk, 1.1);
+    int constant =  addConstant(&chunk, 3.1);
     writeChunk(&chunk, OP_CONSTANT, 1);
     writeChunk(&chunk, constant, 1);
 
     constant =  addConstant(&chunk, 4.3);
-    writeChunk(&chunk, OP_CONSTANT, 4);
-    writeChunk(&chunk, constant, 5);
+    writeChunk(&chunk, OP_CONSTANT, 1);
+    writeChunk(&chunk, constant, 1);
+
+    constant =  addConstant(&chunk, 10.2);
+    writeChunk(&chunk, OP_CONSTANT, 3);
+    writeChunk(&chunk, constant, 3);
+
+    writeChunk(&chunk, OP_RETURN, 10);
+    writeChunk(&chunk, OP_RETURN, 11);
+    writeChunk(&chunk, OP_RETURN, 10);
 
     disassembleChunk(&chunk, "Test Chunk");
     freeChunk(&chunk);

@@ -5,6 +5,12 @@
     "stddef.h": "c",
     "chunk.h": "c",
     "debug.h": "c",
-    "unordered_map": "c"
+    "unordered_map": "c",
+    "memory.h": "c",
+    "value.h": "c",
+    "line.h": "c",
+    "stdio.h": "c",
+    "stdbool.h": "c",
+    "stdint.h": "c"
   }
 }

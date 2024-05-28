@@ -8,7 +8,7 @@ static void simpleInstruction(const char *name, int *offset);
 
 void disassembleChunk(Chunk *chunk, const char *name)
 {
-    printf("=== Chunk: %s ===\n", name);
+    printf("\n=== Chunk: %s ===\n\n", name);
 
     int offset = 0;
     while (offset < chunk->count)
@@ -37,10 +37,12 @@ static void disassembleInstruction(Chunk *chunk, int *offset)
 {
     printf("%04d ", *offset);
 
-    if (*offset > 0 && chunk->lines[*offset] == chunk->lines[*offset-1])
-        printf("   | ");
-    else
-        printf("%4d ", chunk->lines[*offset]);
+    int line = getLine(&chunk->lines, offset);
+    printf("%4d ", line);
+    // if (*offset > 0 && chunk->lines[*offset] == chunk->lines[*offset-1])
+    //     printf("   | ");
+    // else
+    //     printf("%4d ", chunk->lines[*offset]);
 
     uint8_t instruction = chunk->code[*offset];
     switch (instruction)
