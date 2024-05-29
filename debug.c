@@ -3,8 +3,8 @@
 #include "chunk.h"
 #include "debug.h"
 
-static void disassembleInstruction(Chunk *chunk, int *offset);
 static void simpleInstruction(const char *name, int *offset);
+static void constantInstruction(const char *name, Chunk *chunk, int *offset);
 
 void disassembleChunk(Chunk *chunk, const char *name)
 {
@@ -17,23 +17,7 @@ void disassembleChunk(Chunk *chunk, const char *name)
     }
 }
 
-
-static void simpleInstruction(const char *name, int *offset)
-{
-    printf("%s\n", name);
-    (*offset)++;
-}
-
-static void constantInstruction(const char* name, Chunk* chunk, int *offset) 
-{
-    uint8_t constant = chunk->code[*offset + 1];
-    printf("%-16s %4d '", name, constant);
-    printValue(chunk->constants.values[constant]);
-    printf("'\n");
-    (*offset) += 2;
-}
-
-static void disassembleInstruction(Chunk *chunk, int *offset)
+void disassembleInstruction(Chunk *chunk, int *offset)
 {
     printf("%04d ", *offset);
 
@@ -60,4 +44,19 @@ static void disassembleInstruction(Chunk *chunk, int *offset)
         (*offset)++;
         return;
     }
+}
+
+static void simpleInstruction(const char *name, int *offset)
+{
+    printf("%s\n", name);
+    (*offset)++;
+}
+
+static void constantInstruction(const char *name, Chunk *chunk, int *offset)
+{
+    uint8_t constant = chunk->code[*offset + 1];
+    printf("%-16s %4d '", name, constant);
+    printValue(chunk->constants.values[constant]);
+    printf("'\n");
+    (*offset) += 2;
 }
