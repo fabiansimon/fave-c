@@ -29,7 +29,7 @@ void writeChunk(Chunk *chunk, uint8_t instruction, int line)
 void freeChunk(Chunk *chunk)
 {
     FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
-    
+
     freeValueArray(&chunk->constants);
     freeLineArray(&chunk->lines);
 

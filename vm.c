@@ -3,6 +3,14 @@
 
 VM vm;
 
+#define BINARY_OPERATION(op) \
+    do                       \
+    {                        \
+        double b = pop();    \
+        double a = pop();    \
+        push(a op b);        \
+    } while (false)
+
 static InterpretResult run();
 static void resetStack();
 
@@ -55,24 +63,43 @@ static InterpretResult run()
         int offset = (int)(vm.ip - vm.chunk->code);
         disassembleInstruction(vm.chunk, &offset);
         printf("          ");
-        for (Value *slot = vm.stack; slot < vm.stackTop; ++slot)
+        for (Value *slot = vm.stack; slot < vm.stackTop; slot++)
         {
             printf("[ ");
             printValue(*slot);
             printf(" ]");
         }
         printf("\n");
+        printf("\n");
 #endif
 
         uint8_t instruction;
         switch (instruction = readByte())
         {
+        case OP_NEGATE:
+            push(-pop());
+            break;
+
+        case OP_ADD:
+            BINARY_OPERATION(+);
+            break;
+        case OP_SUBTRACT:
+            BINARY_OPERATION(-);
+            break;
+        case OP_MULTIPLY:
+            BINARY_OPERATION(*);
+            break;
+        case OP_DIVIDE:
+            BINARY_OPERATION(/);
+            break;
+
         case OP_CONSTANT:
         {
             Value constant = readConstant();
             push(constant);
             break;
         }
+
         case OP_RETURN:
         {
             printValue(pop());

@@ -35,6 +35,24 @@ void disassembleInstruction(Chunk *chunk, int *offset)
         simpleInstruction("OP_RETURN", offset);
         return;
 
+    case OP_NEGATE:
+        simpleInstruction("OP_NEGATE", offset);
+        return;
+
+    /* Binary Operation */
+    case OP_ADD:
+        simpleInstruction("OP_ADD", offset);
+        return;
+    case OP_SUBTRACT:
+        simpleInstruction("OP_SUBTRACT", offset);
+        return;
+    case OP_MULTIPLY:
+        simpleInstruction("OP_MULITPLY", offset);
+        return;
+    case OP_DIVIDE:
+        simpleInstruction("OP_DIVIDE", offset);
+        return;
+
     case OP_CONSTANT:
         constantInstruction("CONSTANT", chunk, offset);
         return;
