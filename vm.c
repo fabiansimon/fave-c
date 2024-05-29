@@ -1,5 +1,6 @@
 #include "vm.h"
 #include "debug.h"
+#include "compiler.h"
 
 VM vm;
 
@@ -23,11 +24,10 @@ void freeVM()
 {
 }
 
-InterpretResult interpret(Chunk *chunk)
+InterpretResult interpret(const char *src)
 {
-    vm.chunk = chunk;
-    vm.ip = vm.chunk->code;
-    return run();
+    compile(src);
+    return INTERPRET_OK;
 }
 
 uint8_t readByte()
