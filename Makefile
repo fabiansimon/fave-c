@@ -8,7 +8,7 @@ CFLAGS = -Wall -Wextra -Werror
 TARGET = main
 
 # Source files
-SRCS = main.c chunk.c memory.c debug.c value.c line.c vm.c compiler.c scanner.c
+SRCS = main.c chunk.c memory.c debug.c value.c line.c vm.c compiler.c scanner.c 
 
 # Object files directory
 OBJDIR = obj
@@ -17,7 +17,7 @@ OBJDIR = obj
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 
 # Header files
-HDRS = common.h chunk.h memory.h debug.h value.h line.h vm.h compiler.h scanner.h
+HDRS = common.h chunk.h memory.h debug.h value.h line.h vm.h compiler.h scanner.h token.h
 
 # Default target
 all: $(TARGET)

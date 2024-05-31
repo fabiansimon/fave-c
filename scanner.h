@@ -3,11 +3,12 @@
 
 typedef struct
 {
-    const char *start;
-    const char *curr;
+    const char *left;
+    const char *right;
     int line;
 } Scanner;
 
 void initScanner(const char *src);
+void scanToken();
 
 #endif

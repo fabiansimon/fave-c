@@ -43,7 +43,7 @@ static void repl()
             break;
         }
 
-        interpret(line) :
+        interpret(buffer);
     }
 }
 
@@ -69,7 +69,7 @@ static char *readFile(const char *path)
     }
 
     size_t bytesRead = fread(buffer, sizeof(char), size, file);
-    if (bytesRead < fileSize)
+    if (bytesRead < size)
     {
         fprintf(stderr, "Could not read file \"%s\".\n", path);
         exit(74);
