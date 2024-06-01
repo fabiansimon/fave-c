@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+
 #include "scanner.h"
 #include "token.h"
 
@@ -11,9 +15,9 @@ static Token identifierToken();
 static Token errorToken(const char* errorMessage);
 
 /* Utils functions */
-static char advance();
+static char advance(int steps);
 static bool isEnd();
-static char peekForward();
+static char peekForward(int skip);
 static char peek();
 
 static bool isMatch(char expected);
@@ -21,8 +25,10 @@ static bool isDigit(char character);
 static bool isChar(char character);
 
 static void skipWhitespace();
+static void skipComment();
+
 static bool checkKeyword(int start, int length, const char *rest);
-static TokenType identifierToken();
+static TokenType identifyType();
 
 void initScanner(const char *src)
 {
@@ -31,12 +37,16 @@ void initScanner(const char *src)
     scanner.line = 1;
 }
 
-void scanToken()
+Token scanToken()
 {
     skipWhitespace();
     scanner.left = scanner.right;
 
-    char c = advance();
+    if (isEnd()) 
+        return createToken(TOKEN_EOF);
+    
+    char c = advance(1);
+
     if (isDigit(c))
         return numberToken();
 
@@ -68,9 +78,6 @@ void scanToken()
             return createToken(isMatch('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
         }
 
-    if (isEnd())
-        return createToken(TOKEN);
-
     return errorToken("Unexpected character.");
 }
 
@@ -90,17 +97,21 @@ static bool isMatch(char expected)
 
 static bool isDigit(char character)
 {
-    return character >= '0' && character =< '9';
+    return character >= '0' && character <= '9';
 }
 
 static bool isChar(char character)
 {
-    return (character >= 'a' && character =< 'z') || (character >= 'A' && character <= 'Z') || (character == '_');
+    return (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || (character == '_');
 }
 
-static char advance() 
+static char advance(int steps) 
 {
-    scanner.right++;
+    while (steps > 0 && !isEnd()) {
+        scanner.right++;
+        steps--;
+    }
+    
     return scanner.right[-1];
 }
 
@@ -109,12 +120,17 @@ static char peek()
     return *scanner.right;
 }
 
-static char peekForward()
-{
-    if (isEnd())
-        return '\0';
 
-    return scanner.right[1];
+static char peekForward(int skip)
+{
+    const char *curr = scanner.right;
+    for (int i = 0; i < skip; ++i, ++curr)
+    {   
+        if (*curr == '\0')
+            return '\0';
+    };
+
+    return *curr;
 }
 
 static void skipWhitespace()
@@ -132,27 +148,45 @@ static void skipWhitespace()
                 if (c == '\n')
                     scanner.line++;
 
-                advance();
+                advance(1);
                 break;
             }
 
             case '/':
-                if (!peekForward() == '/')
-                    return
-
-                while (peekForward() != '\n' && !isEnd())
-                    advance();
-
+                skipComment();
                 break;
             default:
-            return;
+                return;
             }
     }
 }
 
-static TokenType identifierToken()
-{
-    return TOKEN_IDENTIFIER;
+static void skipComment() {
+    const char next = peekForward(1);
+    if (next != '/' && next != '*')
+        return;
+
+    bool multiline = next == '*';
+    advance(2);
+
+    while (!isEnd()) {
+        if (multiline) {
+            if (peekForward(1) == '*' && peekForward(2) == '/') {
+                advance(3);
+                scanner.line++;
+                return;
+            } else if (peekForward(1) == '\n') {
+                scanner.line++;
+            }
+        } else {
+            if (peekForward(1) == '\n') {
+                advance(1);
+                return;
+            }
+        }
+
+        advance(1);
+    }
 }
 
 static Token createToken(TokenType type)
@@ -160,7 +194,7 @@ static Token createToken(TokenType type)
     Token token;
     token.type = type;
     token.start = scanner.left;
-    token.length = (int)scanner.right - scanner.left;
+    token.length = (int)(scanner.right - scanner.left);
     token.line = scanner.line;
     return token;
 }
@@ -173,32 +207,32 @@ static Token stringToken()
         if (curr == '\n')
             scanner.line++;
 
-        advance();
+        advance(1);
     }
 
     if (isEnd())
         return errorToken("Unterminated string.");
 
-    advance(); // closing "
+    advance(1); // closing "
     return createToken(TOKEN_STRING);
 }
 
 static Token numberToken()
 {
     while (isDigit(peek()))
-        advance();
+        advance(1);
 
-    if (peek() == '.' && isDigit(peekForward())) // check for decimal number
+    if (peek() == '.' && isDigit(peekForward(1))) // check for decimal number
     {
-        advance();
+        advance(1);
         while (isDigit(peek()))
-            advance();
+            advance(1);
     }
 
     return createToken(TOKEN_NUMBER);
 }
 
-static TokenType identifyType(TokenType ) 
+static TokenType identifyType() 
 {
     switch (scanner.left[0]) 
     {
@@ -219,9 +253,9 @@ static TokenType identifyType(TokenType )
             {
                 switch (scanner.left[1])
                 {
-                    case 'a': return checkKeyword(2, 3, "lse", TOKEN_FALSE);
-                    case 'o': return checkKeyword(2, 1, "r", TOKEN_FOR);
-                    case 'u': return checkKeyword(2, 2, "un", TOKEN_FUN);
+                    case 'a': return checkKeyword(2, 3, "lse") ? TOKEN_FALSE : TOKEN_IDENTIFIER;
+                    case 'o': return checkKeyword(2, 1, "r") ? TOKEN_FOR : TOKEN_IDENTIFIER;
+                    case 'u': return checkKeyword(2, 2, "un") ? TOKEN_FUN : TOKEN_IDENTIFIER;
                 }
             }
             break;
@@ -232,12 +266,16 @@ static TokenType identifyType(TokenType )
             {
                 switch (scanner.left[1])
                 {
-                    case 'h': return checkKeyword(2, 2, "is", TOKEN_THIS);
-                    case 'r': return checkKeyword(2, 2, "ue", TOKEN_TRUE);
+                    case 'h': return checkKeyword(2, 2, "is") ? TOKEN_THIS : TOKEN_IDENTIFIER;
+                    case 'r': return checkKeyword(2, 2, "ue") ? TOKEN_TRUE : TOKEN_IDENTIFIER;
                     }
             }
         }
-    } 
+        default:
+            return TOKEN_IDENTIFIER;
+        }
+
+    return TOKEN_IDENTIFIER;
 }
 
 static bool checkKeyword(int start, int length, const char *rest)
@@ -254,11 +292,11 @@ static Token identifierToken()
     char curr = peek();
     while (isChar(curr) || isDigit(curr)) 
     {
-        advance();
+        advance(1);
         curr = peek();
     }
 
-    createToken(identifyType());
+    return createToken(identifyType());
 }
 
 static Token errorToken(const char* errorMessage)

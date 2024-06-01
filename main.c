@@ -14,7 +14,6 @@ int main(int argc, const char *argv[])
 {
 
     initVM();
-
     if (argc != 1 && argc != 2)
     {
         fprintf(stderr, "Usage: fave [path]\n");

@@ -1,6 +1,9 @@
-fun echo(n) {
-    print n;
-    return n;
-}
+var i = 0; // Hello world helkj 
 
-print echo(echo(1) + echo(2)) + echo(echo(4) + echo(5));
+/*
+HELLO
+HELLO
+*/
+HELLO
+
+print i; /*

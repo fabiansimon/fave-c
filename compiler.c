@@ -1,15 +1,19 @@
-#include "comiler.h"
+#include <stdio.h>
+
+#include "compiler.h"
 #include "token.h"
+#include "scanner.h"
 
 void compile(const char *src)
 {
+    // var i = 0;
     initScanner(src);
     int line = -1;
-    for (;;)
+    for (int i = 0; i < 10; ++i)
     {
         Token token = scanToken();
         if (token.line != line) {
-            printf("%4d", token.line);
+            printf("%4d ", token.line);
             line = token.line;
         } else {
             printf("   | ");

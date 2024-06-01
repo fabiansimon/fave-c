@@ -1,6 +1,8 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
+#include "token.h"
+
 typedef struct
 {
     const char *left;
@@ -9,6 +11,6 @@ typedef struct
 } Scanner;
 
 void initScanner(const char *src);
-void scanToken();
+Token scanToken();
 
 #endif
