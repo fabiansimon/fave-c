@@ -13,7 +13,7 @@
 /* Global Virtual Machine instance */
 VM vm;
 
-// static InterpretResult run();
+static InterpretResult run();
 static void resetStack();
 
 void initVM()
@@ -27,8 +27,22 @@ void freeVM()
 
 InterpretResult interpret(const char *src)
 {
-    compile(src);
-    return INTERPRET_OK;
+    Chunk chunk;
+    initChunk(&chunk);
+
+    if (!compile(src, &chunk))
+    {
+        freeChunk(&chunk);
+        return INTERPRET_COMPILE_ERROR;
+    }
+
+    vm.chunk = &chunk;
+    vm.ip = vm.chunk->code;
+
+    InterpretResult result = run();
+
+    freeChunk(&chunk);
+    return result;
 }
 
 uint8_t readByte()
@@ -53,66 +67,66 @@ Value pop()
     return *vm.stackTop;
 }
 
-// static InterpretResult run()
-// {
+static InterpretResult run()
+{
 
-//     InterpretResult result;
-//     for (;;)
-//     {
+    InterpretResult result;
+    for (;;)
+    {
 
-// #ifdef DEBUG_TRACE_EXECUTION
-//         int offset = (int)(vm.ip - vm.chunk->code);
-//         disassembleInstruction(vm.chunk, &offset);
-//         printf("          ");
-//         for (Value *slot = vm.stack; slot < vm.stackTop; slot++)
-//         {
-//             printf("[ ");
-//             printValue(*slot);
-//             printf(" ]");
-//         }
-//         printf("\n");
-//         printf("\n");
-// #endif
+#ifdef DEBUG_TRACE_EXECUTION
+        int offset = (int)(vm.ip - vm.chunk->code);
+        disassembleInstruction(vm.chunk, &offset);
+        printf("          ");
+        for (Value *slot = vm.stack; slot < vm.stackTop; slot++)
+        {
+            printf("[ ");
+            printValue(*slot);
+            printf(" ]");
+        }
+        printf("\n");
+        printf("\n");
+#endif
 
-//         uint8_t instruction;
-//         switch (instruction = readByte())
-//         {
-//         case OP_NEGATE:
-//             push(-pop());
-//             break;
+        uint8_t instruction;
+        switch (instruction = readByte())
+        {
+        case OP_NEGATE:
+            push(-pop());
+            break;
 
-//         case OP_ADD:
-//             BINARY_OPERATION(+);
-//             break;
-//         case OP_SUBTRACT:
-//             BINARY_OPERATION(-);
-//             break;
-//         case OP_MULTIPLY:
-//             BINARY_OPERATION(*);
-//             break;
-//         case OP_DIVIDE:
-//             BINARY_OPERATION(/);
-//             break;
+        case OP_ADD:
+            BINARY_OPERATION(+);
+            break;
+        case OP_SUBTRACT:
+            BINARY_OPERATION(-);
+            break;
+        case OP_MULTIPLY:
+            BINARY_OPERATION(*);
+            break;
+        case OP_DIVIDE:
+            BINARY_OPERATION(/);
+            break;
 
-//         case OP_CONSTANT:
-//         {
-//             Value constant = readConstant();
-//             push(constant);
-//             break;
-//         }
+        case OP_CONSTANT:
+        {
+            Value constant = readConstant();
+            push(constant);
+            break;
+        }
 
-//         case OP_RETURN:
-//         {
-//             printValue(pop());
-//             printf("\n");
-//             return INTERPRET_OK;
-//         }
-//         }
-//     }
+        case OP_RETURN:
+        {
+            printValue(pop());
+            printf("\n");
+            return INTERPRET_OK;
+        }
+        }
+    }
 
-//     result = INTERPRET_COMPILE_ERROR;
-//     return result;
-// }
+    result = INTERPRET_COMPILE_ERROR;
+    return result;
+}
 
 static void resetStack()
 {
