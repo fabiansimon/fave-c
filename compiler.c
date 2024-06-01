@@ -5,24 +5,35 @@
 #include "scanner.h"
 
 Parser parser;
+Chunk *currChunk;
 
 /* Error Utils */
 static void error(const char* errorMessage);
 static void errorAt(Token *token, const char *errorMessage);
 static void errorCurrent(const char *errorMessage);
-static void consume(TokenType type, const char* errorMessage);
+
+static void emitByte(uint8_t instruction);
+static void emitBytes(uint8_t a, uint8_t b);
+static void emitReturn();
+
+static void consume(TokenType type, const char *errorMessage);
+static Chunk* getChunk();
+
+static void endCompiler();
 
 static void advance();
 
 bool compile(const char *src, Chunk *chunk)
 { 
     initScanner(src);
+    currChunk = chunk;
 
     parser.hadError = false;
     parser.panicMode = false;
 
     advance();
     consume(TOKEN_EOF, "Expect end of expression.");
+    endCompiler();
     return !parser.hadError;
 }
 
@@ -49,6 +60,32 @@ static void consume(TokenType type, const char* errorMessage)
     }
 
     advance();
+}
+
+static void emitByte(uint8_t instruction)
+{
+    writeChunk(getChunk(), instruction, parser.prev.line);
+}
+
+static void emitBytes(uint8_t a, uint8_t b)
+{
+    emitByte(a);
+    emitByte(b);
+}
+
+static void emitReturn()
+{
+    emitByte(OP_RETURN);
+}
+
+static void endCompiler()
+{
+    emitReturn();
+}
+
+static Chunk* getChunk()
+{
+    return currChunk;
 }
 
 static void errorCurrent(const char *errorMessage)
