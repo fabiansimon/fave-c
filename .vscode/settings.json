@@ -20,6 +20,8 @@
     "complex": "c",
     "iterator": "c",
     "vector": "c",
-    "compiler.h": "c"
+    "compiler.h": "c",
+    "cstdlib": "c",
+    "ios": "c"
   }
 }
