@@ -5,10 +5,42 @@
 #include "token.h"
 #include "scanner.h"
 
+#ifdef DEBUG_PRINT_CODE
+#include "debug.h"
+#endif
+
 Parser parser;
 Chunk *currChunk;
 
+/* Error Utils */
+static void error(const char* errorMessage);
+static void errorAt(Token *token, const char *errorMessage);
+static void errorCurrent(const char *errorMessage);
+
+static void parsePrecedence(Precedence precedence);
+static ParseRule *getRule(TokenType tokenType);
+
+static void expression();
+static void number();
+static void grouping();
+static void unary();
+static void binary();
+
+static void emitByte(uint8_t instruction);
+static void emitBytes(uint8_t a, uint8_t b);
+static void emitReturn();
+
+static void emitConstant(Value value);
+static uint8_t makeConstant(Value value);
+
+static void consume(TokenType type, const char *errorMessage);
+static Chunk* getChunk();
+
+static void endCompiler();
+static void advance();
+
 /* Parsing Rules */
+
 ParseRule rules[] = {
   [TOKEN_LEFT_PAREN]    = {grouping, NULL,   PREC_NONE},
   [TOKEN_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
@@ -52,34 +84,6 @@ ParseRule rules[] = {
   [TOKEN_EOF]           = {NULL,     NULL,   PREC_NONE},
 };
 
-/* Error Utils */
-static void error(const char* errorMessage);
-static void errorAt(Token *token, const char *errorMessage);
-static void errorCurrent(const char *errorMessage);
-
-static void parsePrecedence(Precedence precedence);
-static ParseRule *getRule(TokenType tokenType);
-
-static void expression();
-static void number();
-static void grouping();
-static void unary();
-static void binary();
-
-static void emitByte(uint8_t instruction);
-static void emitBytes(uint8_t a, uint8_t b);
-static void emitReturn();
-
-static void emitConstant(Value value);
-static uint8_t makeConstant(Value value);
-
-static void consume(TokenType type, const char *errorMessage);
-static Chunk* getChunk();
-
-static void endCompiler();
-
-static void advance();
-
 bool compile(const char *src, Chunk *chunk)
 { 
     initScanner(src);
@@ -101,7 +105,7 @@ static void advance()
     for (;;)
     {
         parser.curr = scanToken();
-        if (parser.curr.type == TOKEN_ERROR)
+        if (parser.curr.type != TOKEN_ERROR)
             break;
 
         errorCurrent(parser.curr.start);
@@ -182,16 +186,36 @@ static void binary()
         case TOKEN_MINUS: emitByte(OP_SUBTRACT); break;
         case TOKEN_STAR: emitByte(OP_MULTIPLY); break;
         case TOKEN_SLASH: emitByte(OP_DIVIDE); break;
+        default: break;
     }
 }
 
 static void parsePrecedence(Precedence precedence)
 {
-    /* TBD */
+    advance();
+    ParseFn prefixRule = getRule(parser.prev.type)->prefix;
+    if (prefixRule == NULL)
+    {
+        error("Expect expression.");
+        return;
+    }
+
+    prefixRule();
+
+    while (precedence <= getRule(parser.curr.type)->precedence)
+    {
+        advance();
+        ParseFn infixRule = getRule(parser.prev.type)->infix;
+        infixRule();
+    }
 }
 
 static void endCompiler()
 {
+#ifdef DEBUG_PRINT_CODE
+    if (!parser.hadError)
+        disassembleChunk(getChunk(), "code");
+#endif
     emitReturn();
 }
 
