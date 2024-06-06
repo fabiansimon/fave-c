@@ -39,6 +39,22 @@ void disassembleInstruction(Chunk *chunk, int *offset)
         simpleInstruction("OP_NEGATE", offset);
         return;
 
+    case OP_TRUE:
+        simpleInstruction("OP_TRUE", offset);
+        return;
+    
+    case OP_FALSE:
+        simpleInstruction("OP_FALSE", offset);
+        return;
+
+    case OP_NIL:
+        simpleInstruction("OP_NIL", offset);
+        return;
+
+    case OP_NOT:
+        simpleInstruction("OP_NOT", offset);
+        return;
+
     /* Binary Operation */
     case OP_ADD:
         simpleInstruction("OP_ADD", offset);

@@ -9,6 +9,13 @@ typedef enum
 {
 
     OP_CONSTANT,
+
+    OP_NIL,
+    OP_NOT,
+    
+    OP_TRUE,
+    OP_FALSE,
+
     OP_RETURN,
 
     /* Unary Operations */

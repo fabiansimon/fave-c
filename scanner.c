@@ -53,6 +53,7 @@ Token scanToken()
     if (isChar(c))
         return identifierToken();
 
+
     switch (c) 
     {
         case '(': return createToken(TOKEN_LEFT_PAREN);

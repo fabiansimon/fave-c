@@ -1,20 +1,31 @@
+#include <stdarg.h>
+
 #include "vm.h"
 #include "debug.h"
 #include "compiler.h"
 
-#define BINARY_OPERATION(op) \
-    do                       \
-    {                        \
-        double b = pop();    \
-        double a = pop();    \
-        push(a op b);        \
+#define BINARY_OPERATION(type, op)                                  \
+    do                                                              \
+    {                                                               \
+        if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))             \
+        {                                                           \
+            runtimeError("Operands must be numbers.");              \
+            return INTERPRET_RUNTIME_ERROR;                         \
+        }                                                           \
+                                                                    \
+        double b = AS_NUMBER(pop());                                \
+        double a = AS_NUMBER(pop());                                \
+        push(type(a op b));                                    \
     } while (false)
 
 /* Global Virtual Machine instance */
 VM vm;
 
 static InterpretResult run();
+static Value peek(int skip);
 static void resetStack();
+static bool isFalsey(Value value);
+static void runtimeError(const char *format, ...);
 
 void initVM()
 {
@@ -67,6 +78,19 @@ Value pop()
     return *vm.stackTop;
 }
 
+static Value peek(int skip)
+{
+    return vm.stackTop[-1 - skip];
+}
+
+static bool isFalsey(Value value)
+{
+    if (IS_NIL(value))
+        return true;
+
+    return IS_BOOL(value) && !AS_BOOL(value);
+}
+
 static InterpretResult run()
 {
 
@@ -92,20 +116,26 @@ static InterpretResult run()
         switch (instruction = readByte())
         {
         case OP_NEGATE:
-            push(-pop());
+            if (!IS_NUMBER(peek(0))) 
+            {
+                runtimeError("Operand must be a number.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            push(NUMBER_VAL(-AS_NUMBER(pop())));
             break;
 
         case OP_ADD:
-            BINARY_OPERATION(+);
+            BINARY_OPERATION(NUMBER_VAL, +);
             break;
         case OP_SUBTRACT:
-            BINARY_OPERATION(-);
+            BINARY_OPERATION(NUMBER_VAL, -);
             break;
         case OP_MULTIPLY:
-            BINARY_OPERATION(*);
+            BINARY_OPERATION(NUMBER_VAL, *);
             break;
         case OP_DIVIDE:
-            BINARY_OPERATION(/);
+            BINARY_OPERATION(NUMBER_VAL, /);
             break;
 
         case OP_CONSTANT:
@@ -114,6 +144,22 @@ static InterpretResult run()
             push(constant);
             break;
         }
+
+        case OP_NOT:
+            push(BOOL_VAL(isFalsey(pop())));
+            break;
+
+        case OP_NIL:
+            push(NIL_VAL);
+            break;
+
+        case OP_TRUE:
+            push(BOOL_VAL(true));
+            break;
+
+        case OP_FALSE:
+            push(BOOL_VAL(false));
+            break;
 
         case OP_RETURN:
         {
@@ -131,4 +177,20 @@ static InterpretResult run()
 static void resetStack()
 {
     vm.stackTop = vm.stack;
+}
+
+static void runtimeError(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+    fputs("\n", stderr);
+
+    /* <-- Replace with code that works with custom line implementation
+    size_t instruction = vm.ip - vm.chunk->code - 1;
+    */
+    int line = 1;
+    fprintf(stderr, "[line %d] in script\n", line);
+    resetStack();
 }

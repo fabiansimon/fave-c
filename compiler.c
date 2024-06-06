@@ -25,6 +25,7 @@ static void number();
 static void grouping();
 static void unary();
 static void binary();
+static void literal();
 
 static void emitByte(uint8_t instruction);
 static void emitBytes(uint8_t a, uint8_t b);
@@ -53,7 +54,7 @@ ParseRule rules[] = {
   [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
   [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
   [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
-  [TOKEN_BANG]          = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_BANG]          = {unary,    NULL,   PREC_NONE},
   [TOKEN_BANG_EQUAL]    = {NULL,     NULL,   PREC_NONE},
   [TOKEN_EQUAL]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_EQUAL_EQUAL]   = {NULL,     NULL,   PREC_NONE},
@@ -67,17 +68,17 @@ ParseRule rules[] = {
   [TOKEN_AND]           = {NULL,     NULL,   PREC_NONE},
   [TOKEN_CLASS]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_ELSE]          = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_FALSE]         = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_FALSE]         = {literal,  NULL,   PREC_NONE},
   [TOKEN_FOR]           = {NULL,     NULL,   PREC_NONE},
   [TOKEN_FUN]           = {NULL,     NULL,   PREC_NONE},
   [TOKEN_IF]            = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_NIL]           = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_NIL]           = {literal,  NULL,   PREC_NONE},
   [TOKEN_OR]            = {NULL,     NULL,   PREC_NONE},
   [TOKEN_PRINT]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_RETURN]        = {NULL,     NULL,   PREC_NONE},
   [TOKEN_SUPER]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_THIS]          = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_TRUE]          = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
   [TOKEN_VAR]           = {NULL,     NULL,   PREC_NONE},
   [TOKEN_WHILE]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
@@ -93,28 +94,26 @@ bool compile(const char *src, Chunk *chunk)
     parser.panicMode = false;
 
     advance();
+    expression();
     consume(TOKEN_EOF, "Expect end of expression.");
     endCompiler();
     return !parser.hadError;
 }
 
-static void advance()
-{
-    parser.prev = parser.curr;
+static void advance() {
+  parser.prev = parser.curr;
 
-    for (;;)
-    {
-        parser.curr = scanToken();
-        if (parser.curr.type != TOKEN_ERROR)
-            break;
+  for (;;) {
+    parser.curr = scanToken();
+    if (parser.curr.type != TOKEN_ERROR) break;
 
-        errorCurrent(parser.curr.start);
-    }
+    errorCurrent(parser.curr.start);
+  }
 }
 
 static void consume(TokenType type, const char* errorMessage)
 {
-    if (parser.curr.type != type) 
+    if (parser.curr.type != type)
     {
         errorCurrent(errorMessage);
         return;
@@ -169,6 +168,10 @@ static void unary()
             emitByte(OP_NEGATE);
             break;
 
+        case TOKEN_BANG:
+            emitByte(OP_NOT);
+            break;
+
         default:
             return;
         }
@@ -187,6 +190,24 @@ static void binary()
         case TOKEN_STAR: emitByte(OP_MULTIPLY); break;
         case TOKEN_SLASH: emitByte(OP_DIVIDE); break;
         default: break;
+    }
+}
+
+static void literal()
+{
+   switch (parser.prev.type)
+   {
+    case TOKEN_NIL:
+        emitByte(OP_NIL); 
+        break;
+    case TOKEN_TRUE:
+        emitByte(OP_TRUE); 
+        break;
+    case TOKEN_FALSE:
+        emitByte(OP_FALSE); 
+        break;
+    default:
+        return;
     }
 }
 
@@ -234,7 +255,7 @@ static void expression()
 static void number() 
 {
     double value = strtod(parser.prev.start, NULL);
-    emitConstant(value);
+    emitConstant(NUMBER_VAL(value));
 }
 
 static void grouping()

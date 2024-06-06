@@ -22,6 +22,17 @@
     "vector": "c",
     "compiler.h": "c",
     "cstdlib": "c",
-    "ios": "c"
+    "ios": "c",
+    "__bit_reference": "c",
+    "__node_handle": "c",
+    "atomic": "c",
+    "bitset": "c",
+    "__memory": "c",
+    "limits": "c",
+    "locale": "c",
+    "optional": "c",
+    "ratio": "c",
+    "system_error": "c",
+    "tuple": "c"
   }
 }
