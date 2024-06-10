@@ -42,7 +42,7 @@ void disassembleInstruction(Chunk *chunk, int *offset)
     case OP_TRUE:
         simpleInstruction("OP_TRUE", offset);
         return;
-    
+
     case OP_FALSE:
         simpleInstruction("OP_FALSE", offset);
         return;
@@ -67,6 +67,15 @@ void disassembleInstruction(Chunk *chunk, int *offset)
         return;
     case OP_DIVIDE:
         simpleInstruction("OP_DIVIDE", offset);
+        return;
+    case OP_EQUAL:
+        simpleInstruction("OP_EQUAL", offset);
+        return;
+    case OP_GREATER:
+        simpleInstruction("OP_GREATER", offset);
+        return;
+    case OP_LESS:
+        simpleInstruction("OP_LESS", offset);
         return;
 
     case OP_CONSTANT:

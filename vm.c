@@ -4,18 +4,18 @@
 #include "debug.h"
 #include "compiler.h"
 
-#define BINARY_OPERATION(type, op)                                  \
-    do                                                              \
-    {                                                               \
-        if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))             \
-        {                                                           \
-            runtimeError("Operands must be numbers.");              \
-            return INTERPRET_RUNTIME_ERROR;                         \
-        }                                                           \
-                                                                    \
-        double b = AS_NUMBER(pop());                                \
-        double a = AS_NUMBER(pop());                                \
-        push(type(a op b));                                    \
+#define BINARY_OPERATION(type, op)                      \
+    do                                                  \
+    {                                                   \
+        if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) \
+        {                                               \
+            runtimeError("Operands must be numbers.");  \
+            return INTERPRET_RUNTIME_ERROR;             \
+        }                                               \
+                                                        \
+        double b = AS_NUMBER(pop());                    \
+        double a = AS_NUMBER(pop());                    \
+        push(type(a op b));                             \
     } while (false)
 
 /* Global Virtual Machine instance */
@@ -116,7 +116,7 @@ static InterpretResult run()
         switch (instruction = readByte())
         {
         case OP_NEGATE:
-            if (!IS_NUMBER(peek(0))) 
+            if (!IS_NUMBER(peek(0)))
             {
                 runtimeError("Operand must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
@@ -159,6 +159,21 @@ static InterpretResult run()
 
         case OP_FALSE:
             push(BOOL_VAL(false));
+            break;
+
+        case OP_EQUAL:
+        {
+            Value b = pop();
+            Value a = pop();
+            push(BOOL_VAL(valuesEqual(a, b)));
+            break;
+        }
+
+        case OP_GREATER:
+            BINARY_OPERATION(BOOL_VAL, >);
+            break;
+        case OP_LESS:
+            BINARY_OPERATION(BOOL_VAL, <);
             break;
 
         case OP_RETURN:
