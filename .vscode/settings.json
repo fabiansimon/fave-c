@@ -33,6 +33,8 @@
     "optional": "c",
     "ratio": "c",
     "system_error": "c",
-    "tuple": "c"
+    "tuple": "c",
+    "object.h": "c",
+    "string": "c"
   }
 }

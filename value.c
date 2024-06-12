@@ -9,14 +9,14 @@ bool valuesEqual(Value a, Value b)
         return false;
     switch (a.type)
     {
-    case VAL_BOOL:
-        return AS_BOOL(a) == AS_BOOL(b);
-    case VAL_NIL:
-        return true;
-    case VAL_NUMBER:
-        return AS_NUMBER(a) == AS_NUMBER(b);
-    default:
-        return false; // Unreachable.
+        case VAL_BOOL:
+            return AS_BOOL(a) == AS_BOOL(b);
+        case VAL_NIL:
+            return true;
+        case VAL_NUMBER:
+            return AS_NUMBER(a) == AS_NUMBER(b);
+        default:
+            return false; // Unreachable.
     }
 }
 void initValueArray(ValueArray *array)
@@ -50,7 +50,7 @@ void printValue(Value value)
     switch (value.type)
     {
     case VAL_BOOL:
-        printf(AS_BOOL(value) ? "true" : false);
+        printf(AS_BOOL(value) ? "true" : "false");
         break;
 
     case VAL_NIL:
@@ -59,5 +59,8 @@ void printValue(Value value)
 
     case VAL_NUMBER:
         printf("%g", AS_NUMBER(value));
+
+    case VAL_OBJ:
+        printf("a freaking object ok");
     }
 }
