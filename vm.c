@@ -1,8 +1,11 @@
 #include <stdarg.h>
+#include <string.h>
 
 #include "vm.h"
 #include "debug.h"
 #include "compiler.h"
+#include "object.h"
+#include "memory.h"
 
 #define BINARY_OPERATION(type, op)                      \
     do                                                  \
@@ -25,6 +28,7 @@ static InterpretResult run();
 static Value peek(int skip);
 static void resetStack();
 static bool isFalsey(Value value);
+static void concat();
 static void runtimeError(const char *format, ...);
 
 void initVM()
@@ -78,6 +82,21 @@ Value pop()
     return *vm.stackTop;
 }
 
+void concat() 
+{
+    ObjString *aString = AS_STRING(pop());
+    ObjString *bString = AS_STRING(pop());
+
+    int totalLength = aString->length + bString->length;
+    char *result = ALLOCATE(char, totalLength + 1); // include the null terminator
+    memcpy(result, aString->chars, aString->length);
+    memcpy(result + aString->length, bString->chars, bString->length);
+    result[totalLength] = '\0';
+
+    ObjString *new = takeString(result, totalLength);
+    push(OBJ_VAL(new));
+}
+
 static Value peek(int skip)
 {
     return vm.stackTop[-1 - skip];
@@ -126,8 +145,21 @@ static InterpretResult run()
             break;
 
         case OP_ADD:
-            BINARY_OPERATION(NUMBER_VAL, +);
+        {
+            Value a = peek(0);
+            Value b = peek(1);
+            if (IS_STRING(a) && IS_STRING(b))
+                concat();
+            else if (IS_NUMBER(a) && IS_NUMBER(b))
+                BINARY_OPERATION(NUMBER_VAL, +);
+            else 
+            {
+                runtimeError("Operands must be either both numbers or strings");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
             break;
+        }
         case OP_SUBTRACT:
             BINARY_OPERATION(NUMBER_VAL, -);
             break;

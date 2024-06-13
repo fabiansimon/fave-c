@@ -35,6 +35,11 @@
     "system_error": "c",
     "tuple": "c",
     "object.h": "c",
-    "string": "c"
+    "string": "c",
+    "__hash_table": "c",
+    "array": "c",
+    "charconv": "c",
+    "type_traits": "c",
+    "variant": "c"
   }
 }

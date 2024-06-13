@@ -29,8 +29,10 @@ struct ObjString
 };
 
 ObjString *copyString(const char *chars, int length);
+ObjString *takeString(char *chars, int length);
+void printObj(Value value);
 
-static inline bool checkObjType(Value value, ObjType type) 
+static inline bool checkObjType(Value value, ObjType type)
 {
     return IS_OBJ(value) && AS_OBJ(value)->type == type;
 }
